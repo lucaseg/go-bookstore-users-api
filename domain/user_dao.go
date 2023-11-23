@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/go-bookstore-users-api/logger"
 	"github.com/go-bookstore-users-api/repository/mysql/users_db"
 
 	"github.com/go-bookstore-users-api/utils"
@@ -21,6 +22,7 @@ func (user *User) Get() *utils.RestError {
 
 	stmt, err := users_db.Client.Prepare(getUserQuery)
 	if err != nil {
+		logger.Error("Error trying to get connection to database", err)
 		return utils.InteralServerError("Error trying to get connection to database")
 	}
 

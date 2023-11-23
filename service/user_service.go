@@ -7,7 +7,21 @@ import (
 	"github.com/go-bookstore-users-api/utils"
 )
 
-func GetUser(userId int64) (*domain.User, *utils.RestError) {
+var (
+	UserService userService = userService{}
+)
+
+type userService struct {
+}
+
+type userServiceInterface interface {
+	GetUser(userId int64) (*domain.User, *utils.RestError)
+	CreateUser(user domain.User) (*domain.User, *utils.RestError)
+	UpdateUser(user domain.User) (*domain.User, *utils.RestError)
+	DeleteUser(userId int64) *utils.RestError
+}
+
+func (s *userService) GetUser(userId int64) (*domain.User, *utils.RestError) {
 	var userDto = domain.User{Id: userId}
 
 	fmt.Printf("Valor de la variable %v \n", userDto)
@@ -25,7 +39,7 @@ func GetUser(userId int64) (*domain.User, *utils.RestError) {
 	return &userDto, nil
 }
 
-func CreateUser(user domain.User) (*domain.User, *utils.RestError) {
+func (s *userService) CreateUser(user domain.User) (*domain.User, *utils.RestError) {
 	if err := user.Validate(); err != nil {
 		return nil, err
 	}
@@ -38,10 +52,10 @@ func CreateUser(user domain.User) (*domain.User, *utils.RestError) {
 	return &user, nil
 }
 
-func UpdateUser(user domain.User) (*domain.User, *utils.RestError) {
+func (s *userService) UpdateUser(user domain.User) (*domain.User, *utils.RestError) {
 	var err *utils.RestError
 
-	originalUser, err := GetUser(user.Id)
+	originalUser, err := s.GetUser(user.Id)
 	if err != nil {
 		return nil, err
 	}
@@ -58,7 +72,7 @@ func UpdateUser(user domain.User) (*domain.User, *utils.RestError) {
 	return originalUser, nil
 }
 
-func DeleteUser(userId int64) *utils.RestError {
+func (s *userService) DeleteUser(userId int64) *utils.RestError {
 	var user domain.User
 	user.Id = userId
 

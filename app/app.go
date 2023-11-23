@@ -2,7 +2,7 @@ package app
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/go-bookstore-users-api/repository/mysql/users_db"
+	"github.com/go-bookstore-users-api/logger"
 )
 
 var (
@@ -10,7 +10,7 @@ var (
 )
 
 func StartApplication() {
-	users_db.Init()
+	logger.Info("Starting application...")
 	mapUrls()
 	router.Run()
 }
