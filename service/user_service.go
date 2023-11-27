@@ -1,8 +1,6 @@
 package service
 
 import (
-	"fmt"
-
 	"github.com/go-bookstore-users-api/domain"
 	"github.com/go-bookstore-users-api/utils"
 )
@@ -19,17 +17,11 @@ type userServiceInterface interface {
 	CreateUser(user domain.User) (*domain.User, *utils.RestError)
 	UpdateUser(user domain.User) (*domain.User, *utils.RestError)
 	DeleteUser(userId int64) *utils.RestError
+	Login(email string, password string) (*domain.User, *utils.RestError)
 }
 
 func (s *userService) GetUser(userId int64) (*domain.User, *utils.RestError) {
 	var userDto = domain.User{Id: userId}
-
-	fmt.Printf("Valor de la variable %v \n", userDto)
-	fmt.Printf("Dirección de memoria de userDto: %p\n", &userDto)
-
-	var ptr *domain.User = &userDto
-	fmt.Printf("Valor del puntero %p \n", ptr)
-	fmt.Printf("Direccion de memoria del puntero %p \n", &ptr)
 
 	err := userDto.Get()
 	if err != nil {
@@ -80,4 +72,16 @@ func (s *userService) DeleteUser(userId int64) *utils.RestError {
 		return err
 	}
 	return nil
+}
+
+func (s *userService) Login(login domain.Login) (*domain.User, *utils.RestError) {
+	user := domain.User{
+		Email:    login.Email,
+		Password: login.Password,
+	}
+
+	if err := user.FindByEmailAndPassword(); err != nil {
+		return nil, err
+	}
+	return &user, nil
 }

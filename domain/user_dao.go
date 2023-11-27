@@ -11,11 +11,12 @@ import (
 )
 
 var (
-	insertUserQuery   = "INSERT INTO users.users(first_name, last_name, email, date_created, status, password) VALUES(?, ?, ?, ?, ?, ?);"
-	getUserQuery      = "SELECT * FROM users WHERE id = ?;"
-	updateUserQuery   = "UPDATE users.users SET first_name = ?, last_name = ? WHERE id=?;"
-	deleteUserQuery   = "DELETE FROM users WHERE id = ?;"
-	findByStatusQuery = "SELECT * FROM users WHERE status=?;"
+	insertUserQuery        = "INSERT INTO users.users(first_name, last_name, email, date_created, status, password) VALUES(?, ?, ?, ?, ?, ?);"
+	getUserQuery           = "SELECT * FROM users.users WHERE id = ?;"
+	updateUserQuery        = "UPDATE users.users SET first_name = ?, last_name = ? WHERE id=?;"
+	deleteUserQuery        = "DELETE FROM users.users WHERE id = ?;"
+	findByStatusQuery      = "SELECT * FROM users.users WHERE status=?;"
+	findByEmailAndPassword = "SELECT * FROM users.users WHERE email=? AND password=?;"
 )
 
 func (user *User) Get() *utils.RestError {
@@ -53,14 +54,14 @@ func (user *User) Save() *utils.RestError {
 
 	defer stmt.Close()
 	user.Password = utils.Encode(user.Password)
-	resutl, err := stmt.Exec(user.FirstName, user.LastName, user.Email, user.DateCreated, user.Status, user.Password)
+	result, err := stmt.Exec(user.FirstName, user.LastName, user.Email, user.DateCreated, user.Status, user.Password)
 	if err != nil {
 		utils.InteralServerError("Error trying to insert the user into the data base")
 	}
 
 	fmt.Printf("%v", *user)
 
-	userId, err := resutl.LastInsertId()
+	userId, err := result.LastInsertId()
 
 	if err != nil {
 		utils.InteralServerError("Error trying to insert the user into the data base")
@@ -122,6 +123,24 @@ func (user *User) Delete() *utils.RestError {
 	_, deleteErr := stmt.Exec(user.Id)
 	if deleteErr != nil {
 		return utils.InteralServerError("Error executing query to delete user")
+	}
+
+	return nil
+}
+
+func (user *User) FindByEmailAndPassword() *utils.RestError {
+	stmt, err := users_db.Client.Prepare(findByEmailAndPassword)
+	if err != nil {
+		return utils.InteralServerError("Error trying to get connection to database")
+	}
+	defer stmt.Close()
+	result := stmt.QueryRow(user.Email, utils.Encode(user.Password))
+
+	if err := result.Scan(&user.Id, &user.FirstName, &user.LastName, &user.Email, &user.DateCreated, &user.Status, &user.Password); err != nil {
+		if strings.Contains(err.Error(), "no rows in result set") {
+			return utils.NotFound("User not found")
+		}
+		return utils.InteralServerError("Error scanning results")
 	}
 
 	return nil

@@ -92,3 +92,20 @@ func DeleteUser(c *gin.Context) {
 
 	c.JSON(http.StatusOK, nil)
 }
+
+func Login(c *gin.Context) {
+	var request domain.Login
+
+	if err := c.BindJSON(&request); err != nil {
+		c.JSON(http.StatusBadRequest, utils.BadRequest("Invalid request to login"))
+		return
+	}
+
+	user, err := service.UserService.Login(request)
+	if err != nil {
+		c.JSON(err.Status, err)
+		return
+	}
+
+	c.JSON(http.StatusOK, user)
+}

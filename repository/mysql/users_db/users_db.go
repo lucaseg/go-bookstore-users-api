@@ -11,7 +11,7 @@ var (
 	Client *sql.DB
 )
 
-func Init() {
+func init() {
 	dataSoruceName := fmt.Sprintf("%s:%s@tcp(%s)/%s?charset=utf8", "root", "example", "127.0.0.1:3306", "users")
 
 	var err error
@@ -23,5 +23,5 @@ func Init() {
 	if err = Client.Ping(); err != nil {
 		panic(err)
 	}
-	fmt.Println("Connection to dabase successfully")
+	fmt.Println("Connection to database successfully")
 }
